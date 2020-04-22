@@ -46,7 +46,7 @@ function LedIndicatorController($element, $scope, $timeout, utils, types) {
     let vm = this;
 
     vm.showTitle = false;
-    vm.value = false;
+    vm.value = 0;
     vm.error = '';
 
     const checkStatusPollingInterval = 10000;
