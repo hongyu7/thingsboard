@@ -46,7 +46,7 @@ function LedIndicatorController($element, $scope, $timeout, utils, types) {
     let vm = this;
 
     vm.showTitle = false;
-    vm.value = false;
+    vm.value = 0;
     vm.error = '';
 
     const checkStatusPollingInterval = 10000;
@@ -93,11 +93,18 @@ function LedIndicatorController($element, $scope, $timeout, utils, types) {
         var origColor = angular.isDefined(vm.ctx.settings.ledColor) ? vm.ctx.settings.ledColor : 'green';
 
         vm.valueAttribute = angular.isDefined(vm.ctx.settings.valueAttribute) ? vm.ctx.settings.valueAttribute : 'value';
-
+        
+        vm.noripeColor = tinycolor("rgb (129, 214, 84)").toHexString();
+        vm.ripeColor = tinycolor("rgb (242, 177, 61)").toHexString();
+        vm.nobodyColor = tinycolor("rgb (255, 121, 47)").toHexString();
+        vm.getColor = tinycolor("rgb (0, 0, 0)").toHexString();
+        vm.errorColor = tinycolor("rgb (218, 59, 38)").toHexString();
+        
         vm.ledColor = tinycolor(origColor).brighten(30).toHexString();
         vm.ledMiddleColor = tinycolor(origColor).toHexString();
         vm.disabledColor = tinycolor(origColor).darken(40).toHexString();
         vm.disabledMiddleColor = tinycolor(origColor).darken(60).toHexString();
+
 
         vm.ctx.resize = resize;
         $scope.$applyAsync(() => {
@@ -165,21 +172,39 @@ function LedIndicatorController($element, $scope, $timeout, utils, types) {
     function setValue(value, forceUpdate) {
         if (vm.value != value || forceUpdate) {
             vm.value = value;
+            //console.log('thinsboard debug value is ' + value);
             updateColor();
         }
     }
 
     function updateColor() {
-        var color = vm.value ? vm.ledColor : vm.disabledColor;
-        var middleColor = vm.value ? vm.ledMiddleColor : vm.disabledMiddleColor;
+        var color;
+        if (vm.value == 1) {
+            color = vm.noripeColor;
+        } else if (vm.value == 2) {
+            color = vm.ripeColor;
+        } else if (vm.value == 3) {
+            color = vm.nobodyColor;
+        } else if (vm.value == 4) {
+            color = vm.getColor;
+        } else if (vm.value == 5) {
+            color = vm.errorColor;
+        } else {
+            color = vm.ledColor;
+	}
+        //console.log('sunlf colcor is ' + color);
+        //var color = vm.value ? vm.ledColor : vm.disabledColor;
+        //var middleColor = vm.value ? vm.ledMiddleColor : vm.disabledMiddleColor;
+        var middleColor = tinycolor(color).toHexString();
         var boxShadow = `#000 0 -1px 6px 1px, inset ${middleColor} 0 -1px 8px, ${color} 0 3px 11px`;
         led.css({'backgroundColor': color});
         led.css({'boxShadow': boxShadow});
-        if (vm.value) {
+        //led.removeClass( 'disabled');
+	/**if (vm.value) {
             led.removeClass( 'disabled' );
         } else {
             led.addClass( 'disabled' );
-        }
+        }**/
     }
 
     function onError(error) {
@@ -264,7 +289,7 @@ function LedIndicatorController($element, $scope, $timeout, utils, types) {
     }
 
     function onDataUpdated(subscription, apply) {
-        var value = false;
+        var value = 1;
         var data = subscription.data;
         if (data.length) {
             var keyData = data[0];
@@ -275,7 +300,7 @@ function LedIndicatorController($element, $scope, $timeout, utils, types) {
                     try {
                         parsed = vm.parseValueFunction(angular.fromJson(attrValue));
                     } catch (e){/**/}
-                    value = parsed ? true : false;
+                    value = parsed;
                 }
             }
         }
